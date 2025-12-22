@@ -1,0 +1,15 @@
+s3_ros2_node:
+  ros__parameters:
+    s3_command_topic: "/s3/command"
+
+    s3_map_data_topic: "/s3/map"
+    s3_map_points_topic: "/s3/map_points"
+    s3_scan_topic: "/s3/scan"
+    s3_point_cloud_topic: "/s3/point_cloud"
+    s3_imu_topic: "/s3/imu"
+    s3_odom_topic: "/s3/odom"
+
+    s3_ip_address: "127.0.0.1"
+
+    s3_source_frame: "s3_odom"
+    s3_child_frame: "s3_lidar"

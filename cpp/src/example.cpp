@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 
 
 
-  // Send commant to S3
+  // Send command to S3
   // Available commands are:
   //   shutdown
   //   disconnect

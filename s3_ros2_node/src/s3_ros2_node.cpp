@@ -110,11 +110,15 @@ class S3Ros2Node : public rclcpp::Node {
     this->get_parameter("s3_ip_address", s3IpAddress_);
 
     // TF
-    tfBroadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-    this->declare_parameter<std::string>("s3_source_frame", "s3_odom");
-    this->declare_parameter<std::string>("s3_child_frame", "s3_lidar");
-    this->get_parameter("s3_source_frame", s3SourceFrame_);
-    this->get_parameter("s3_child_frame", s3ChildFrame_);
+    this->declare_parameter<bool>("broadcast_tf", true);
+    this->get_parameter("broadcast_tf", broadcastTf_);
+    if (broadcastTf_) {
+      tfBroadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+      this->declare_parameter<std::string>("s3_source_frame", "s3_odom");
+      this->declare_parameter<std::string>("s3_child_frame", "s3_lidar");
+      this->get_parameter("s3_source_frame", s3SourceFrame_);
+      this->get_parameter("s3_child_frame", s3ChildFrame_);
+    }
 
     // Initialization for socket communication
     setupSocket();
@@ -133,6 +137,7 @@ class S3Ros2Node : public rclcpp::Node {
 
     RCLCPP_INFO(this->get_logger(), "s3_ip_address:        %s", s3IpAddress_.c_str());
 
+    RCLCPP_INFO(this->get_logger(), "broadcast_tf:         %s", broadcastTf_ ? "yes" : "no");
     RCLCPP_INFO(this->get_logger(), "s3_source_frame:      %s", s3SourceFrame_.c_str());
     RCLCPP_INFO(this->get_logger(), "s3_child_frame:       %s", s3ChildFrame_.c_str());
   }
@@ -276,7 +281,9 @@ class S3Ros2Node : public rclcpp::Node {
           break;
         }
         publishOdom(odomPub_, s3SourceFrame_, s3ChildFrame_, pkt);
-        publishOdomTF(s3SourceFrame_, s3ChildFrame_, pkt);
+        if (broadcastTf_) {
+          publishOdomTF(s3SourceFrame_, s3ChildFrame_, pkt);
+        }
 
       } else if (type == net::MsgType::SCAN) {
         net::ScanPacket pkt;
@@ -649,6 +656,7 @@ class S3Ros2Node : public rclcpp::Node {
   rclcpp::Publisher<sensor_msgs::msg::PointCloud>::SharedPtr pointCloudPub_;
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub_;
 
+  bool broadcastTf_{true};
   std::unique_ptr<tf2_ros::TransformBroadcaster> tfBroadcaster_;
   std::string s3SourceFrame_;
   std::string s3ChildFrame_;
